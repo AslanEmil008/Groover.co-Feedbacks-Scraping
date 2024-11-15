@@ -1,13 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
 import csv
 import signal
 import sys
-import html  # Import html module to handle HTML entities
 
 # Initialize the WebDriver for Firefox
 driver = webdriver.Firefox()
@@ -50,8 +49,8 @@ time.sleep(5)
 
 # Finding the specific song and clicking it for feedback scraping
 obsessed_element = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.XPATH, "//span[text()='Before']"))
-    #[Before,BEFORE,Obsessed,INFINITE,Searching,Alternate Universes,Infinite]
+    EC.element_to_be_clickable((By.XPATH, "//span[text()='Obsessed']"))
+    # In here you only must change the song name ['Before','BEFORE',' Obsessed','INFINITE','Searching',' Alternate Universes','Infinite']
 )
 obsessed_element.click()
 
@@ -63,8 +62,8 @@ profiles_data = []
 visited_names = set()  # Set to keep track of processed influencer names
 
 # Function to save profiles to CSV
-# Change CSV filename per song if necessary
-def save_to_csv(profiles, filename='influencer_profiles_Before.csv'):
+# And for every song change csv name
+def save_to_csv(profiles, filename='influencer_profilesinf.csv'):
     with open(filename, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=["name", "link"])
         writer.writeheader()
@@ -81,91 +80,85 @@ def signal_handler(sig, frame):
 # Set up signal handling
 signal.signal(signal.SIGINT, signal_handler)
 
-# Function to check and click the "Next Page" button
-def go_to_next_page():
-    try:
-        # Wait for the "Next Page" button to become clickable
-        next_page_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[@title='Next Page']"))
-        )
-        # Check if the button is disabled (i.e., no more pages)
-        if "disabled" in next_page_button.get_attribute("class"):
-            print("No more pages to navigate.")
-            return False  # No more pages, stop scraping
-        else:
-            # Click the "Next Page" button
-            next_page_button.click()
-            time.sleep(3)  # Wait for the next page to load
-            return True  # Proceed to next page
-    except Exception as e:
-        print(f"Error while trying to go to the next page: {e}")
-        return False  # Stop scraping if an error occurs
-
 try:
-    # Start pagination loop
     while True:
-        # Wait until influencer names are present
-        name_elements = WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located(
-                (By.XPATH, "//div[contains(@class, 'desktopDisplay')]//span[contains(@class, 'tw-ellipsis') and not(contains(., 'Add optional files')) and not(contains(., 'Add the requested files'))]")
-            )
-        )
+        # Find all influencer elements based on the parent div structure
+        influencer_elements = driver.find_elements(By.CSS_SELECTOR, "div.desktopDisplay")
 
-        # Loop through the filtered influencer name elements
-        for influencer_name_element in name_elements:
-            influencer_name = influencer_name_element.text  # Get the name of the influencer
+        # Loop through influencer elements to find all profiles
+        i = 0
+        while i < len(influencer_elements):
+            influencer = influencer_elements[i]
 
-            # Decode HTML entities and clean up any surrounding spaces or special characters
-            influencer_name = html.unescape(influencer_name).strip()
-            
-            # Remove any trailing or leading spaces or semicolons
-            influencer_name = influencer_name.replace(' ;', '').strip()  # Adjust based on your data
+            # Use the XPath filter to exclude unwanted names
+            try:
+                influencer_name_element = influencer.find_element(By.XPATH, ".//span[contains(@class, 'tw-ellipsis') and not(contains(., 'Add optional files')) and not(contains(., 'Add the requested files'))]")
+                influencer_name = influencer_name_element.text  # Get the name of the influencer
 
-            # Skip if this influencer has already been processed
-            if influencer_name in visited_names:
+                # Skip if this influencer has already been processed or if the name is empty
+                if influencer_name in visited_names or not influencer_name:
+                    i += 1
+                    continue
+
+                print(f"Clicking on influencer: {influencer_name}")  # Print the name being clicked
+
+                # Click the influencer to navigate to their profile
+                influencer_name_element.click()
+
+                # Wait for the profile page to load
+                time.sleep(3)  # Adjust time as necessary
+
+                # Initialize profile_link to None
+                profile_link = ""
+
+                try:
+                    # Scrape the link to the influencer's profile
+                    profile_link_element = driver.find_element(By.CSS_SELECTOR, "a[data-v-67f8ff01]")
+                    profile_link = profile_link_element.get_attribute("href")  # Get the URL from the anchor tag
+
+                    # Check if profile_link is None
+                    if not profile_link:
+                        print(f"No link for {influencer_name}.")  # Print no link message
+                        profile_link = ""  # Ensure it's an empty string for CSV
+
+                except Exception:
+                    print(f"No link for {influencer_name}.")  # Print no link message
+
+                # Store the data
+                profiles_data.append({"name": influencer_name, "link": profile_link})
+                visited_names.add(influencer_name)  # Mark this name as visited
+
+                # Save to CSV after each successful scrape
+                save_to_csv(profiles_data)
+
+                # Go back to the previous page to click the next influencer
+                driver.back()
+                time.sleep(3)  # Wait for the previous page to load again
+
+                i += 1  # Move to the next influencer
+
+            except Exception as e:
+                # Skip if no valid influencer name was found (e.g., an error in extraction)
+                i += 1
                 continue
 
-            print(f"Clicking on influencer: {influencer_name}")  # Print the name being clicked
+        # Check for the next page button
+        try:
+            next_page_button = driver.find_element(By.XPATH, "//button[@title='Next Page']")
 
-            # Click the influencer to navigate to their profile
-            influencer_name_element.click()
-
-            # Wait for the profile page to load
-            time.sleep(3)  # Adjust time as necessary
-
-            # Initialize profile_link to None
-            profile_link = ""
-
-            try:
-                # Scrape the link to the influencer's profile
-                profile_link_element = driver.find_element(By.CSS_SELECTOR, "a[data-v-67f8ff01]")
-                profile_link = profile_link_element.get_attribute("href")  # Get the URL from the anchor tag
-                
-                # Check if profile_link is None
-                if not profile_link:
-                    print(f"No link for {influencer_name}.")  # Print no link message
-                    profile_link = ""  # Ensure it's an empty string for CSV
-
-            except Exception:
-                print(f"No link for {influencer_name}.")  # Print no link message
-
-            # Store the data
-            profiles_data.append({"name": influencer_name, "link": profile_link})
-            visited_names.add(influencer_name)  # Mark this name as visited
-
-            # Save to CSV after each successful scrape
-            save_to_csv(profiles_data)
-
-            # Go back to the previous page to click the next influencer
-            driver.back()
-            time.sleep(3)  # Wait for the previous page to load again
-
-        # Now go to the next page, if possible
-        if not go_to_next_page():
-            break  # Exit the loop if no more pages or an error occurred
+            # Check if the button is disabled or not present
+            if "disabled" in next_page_button.get_attribute("class") or not next_page_button.is_enabled():
+                print("No more pages to navigate.")
+                break  # Exit loop if the button is disabled or not enabled
+            else:
+                next_page_button.click()  # Click the next page button
+                time.sleep(3)  # Wait for the next page to load
+        except Exception:
+            print("Next page button not found or no more pages. Ending scraping.")
+            break  # Exit if the next page button is not found
 
 except Exception as e:
-    print(f"An error occurred: {str(e)}")
+    #print(f"An error occurred: {str(e)}")
     save_to_csv(profiles_data)  # Save before exit
 
 finally:
@@ -174,6 +167,7 @@ finally:
 
     # Close the driver
     driver.quit()
+
 
 
 
