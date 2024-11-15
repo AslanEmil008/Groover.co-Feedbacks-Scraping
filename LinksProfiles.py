@@ -63,7 +63,7 @@ visited_names = set()  # Set to keep track of processed influencer names
 
 # Function to save profiles to CSV
 # And for every song change csv name
-def save_to_csv(profiles, filename='influencer_profilesinf.csv'):
+def save_to_csv(profiles, filename='influencer_profiles_Obsessed.csv'):
     with open(filename, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=["name", "link"])
         writer.writeheader()
