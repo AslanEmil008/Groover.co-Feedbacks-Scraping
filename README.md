@@ -1,7 +1,10 @@
 # Groover.co Feedbacks Scraping
 ## Introduction
 This project scrapes data about feedback and feedback writers from the Groover.co music website.<br>
-There are three scripts included that extract data about feedback and feedback writers for your music.
+There is also a script available for extracting your music names, if needed.<br>
+Three main scripts are included to extract data about feedback and feedback writers for your music.
+
+
 
 # Getting Started
 <b>1.Clone the repository:</b>
@@ -51,7 +54,20 @@ After running `Genres.py`, you will get:
 
 - Genres associated with the feedback writers
 
+## Getting Only Music Names
+You can run the `song_name.py` script to extract only the music names.
 
+## How to Run
+To run `song_name.py`, locate the lines where the email and password are entered and replace them with your own credentials:
+
+```bash
+email_input.send_keys("your-email@gmail.com")  # Replace with your email
+
+time.sleep(2)
+
+password_input = driver.find_element(By.CSS_SELECTOR, "input[data-test-id='loginFormPasswordInputField']")
+password_input.send_keys("your-password")  # Replace with your password
+```
 
 
 
