@@ -58,7 +58,7 @@ After running `Genres.py`, you will get:
 You can run the `song_name.py` script to extract only the music names.
 
 ## How to Run
-To run `song_name.py`, locate the lines where the email and password are entered and replace them with your own credentials:
+<b>1.</b>To run `song_name.py`, locate the lines where the email and password are entered and replace them with your own credentials:
 
 ```bash
 email_input.send_keys("your-email@gmail.com")  # Replace with your email
@@ -68,7 +68,10 @@ time.sleep(2)
 password_input = driver.find_element(By.CSS_SELECTOR, "input[data-test-id='loginFormPasswordInputField']")
 password_input.send_keys("your-password")  # Replace with your password
 ```
-
+<b>2.</b> Run the script
+```bash
+python3 song_name.py
+```
 
 
 
