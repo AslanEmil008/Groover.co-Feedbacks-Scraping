@@ -34,3 +34,30 @@ After making the necessary changes in the `Run Genres.py` file, run:
 ```bash
 python3 Run Genres.py
 ```
+## What data will you get?
+After running the `update_feedbacks.py` script, you will get data such as:
+
+- Feedback content
+- Feedback giver's name
+- Song name (to distinguish each song's feedback)
+- Feedback type (e.g., 'Promise to share' marked as Success, 'Feedback in red' marked as Fail)
+
+After running `LinksProfiles.py`, you will get the following data:
+
+- Feedback writers' names
+- Profile URLs
+
+After running `Genres.py`, you will get:
+
+- Genres associated with the feedback writers
+
+
+
+
+
+
+
+
+
+
+
