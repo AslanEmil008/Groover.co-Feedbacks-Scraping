@@ -35,12 +35,12 @@ time.sleep(2)
 email_input = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "input[data-test-id='loginFormEmailInputField']"))
 )
-email_input.send_keys("aspenjadeartist@gmail.com")  # Replace with your email
+email_input.send_keys("your_gmail.com")  # Replace with your email
 
 time.sleep(2)
 
 password_input = driver.find_element(By.CSS_SELECTOR, "input[data-test-id='loginFormPasswordInputField']")
-password_input.send_keys("Scrapy*11")  # Replace with your password
+password_input.send_keys("your-password")  # Replace with your password
 
 time.sleep(2)
 
