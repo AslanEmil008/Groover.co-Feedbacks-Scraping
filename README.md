@@ -11,7 +11,7 @@ Three main scripts are included to extract data about feedback and feedback writ
 
 ```bash
 git clone https://github.com/AslanEmil008/Groover.co-Feedbacks-Scraping.git
-cd linkedin-data-scraper
+cd Groover.co-Feedbacks-Scraping
 ```
 
 <b>2.Then install the requirements:</b>
